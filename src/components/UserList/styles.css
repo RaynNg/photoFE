@@ -1,0 +1,16 @@
+.user-list {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.user-list-item:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.user-list .MuiListItemText-primary {
+  font-weight: 500;
+}
+
+.user-list .MuiListItemText-secondary {
+  color: rgba(0, 0, 0, 0.6);
+}

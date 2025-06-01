@@ -1,0 +1,22 @@
+.user-detail {
+  margin: 16px;
+  padding: 24px;
+}
+
+.user-detail-header {
+  margin-bottom: 24px;
+}
+
+.user-detail-location {
+  margin: 16px 0;
+  color: #666;
+}
+
+.user-detail-description {
+  margin: 16px 0 24px 0;
+  line-height: 1.6;
+}
+
+.photos-button {
+  margin-top: 16px !important;
+}
