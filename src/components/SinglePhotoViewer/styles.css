@@ -1,0 +1,23 @@
+.single-photo-card {
+  width: 100%;
+}
+
+.single-photo-image {
+  max-height: 500px;
+  object-fit: contain;
+}
+
+.photo-nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.comment-form {
+  margin-bottom: 16px;
+}
+
+.comment-submit-button {
+  margin-top: 8px;
+}

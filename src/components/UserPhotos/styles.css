@@ -1,60 +1,61 @@
 .photo-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  padding: 20px;
-  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
 }
 
 .photo-card {
-  max-width: 400px;
-  width: 100%;
-  margin-bottom: 20px;
-  transition: transform 0.2s;
+  width: 80%;
+  cursor: default;
+  transition: box-shadow 0.3s ease;
 }
 
-.photo-card:hover {
-  transform: scale(1.02);
+.photo-card.clickable {
+  cursor: pointer;
+}
+
+.photo-card.clickable:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .photo-image {
-  width: 100%;
   height: auto;
   object-fit: cover;
 }
 
 .comment-section {
-  margin-top: 15px;
+  margin-top: 16px;
 }
 
 .comment-card {
-  margin-bottom: 10px;
-  padding: 10px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background-color: #f9f9f9;
 }
 
-.single-photo-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-}
-
-.photo-navigation {
+.comment-date-user {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 10px;
-  margin-bottom: 20px;
-  width: 100%;
-  max-width: 600px;
+  gap: 4px;
+  color: #666;
 }
 
-.photo-navigation .MuiIconButton-root {
-  padding: 12px;
+.comment-user-link {
+  margin-left: 4px;
+  text-decoration: none;
 }
 
-.photo-navigation .MuiTypography-root {
-  min-width: 150px;
-  text-align: center;
+.comment-user-link:hover {
+  text-decoration: underline;
+}
+
+.comment-text {
+  margin-top: 8px;
+}
+
+.justify-between {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
 }

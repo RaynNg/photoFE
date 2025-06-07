@@ -1,34 +1,9 @@
-.topbar-appBar {
-  height: 60;
-  justify-content: "center";
-  background-color: burlywood;
-}
-
-.topbar-toolbar {
-  position: relative;
-  height: 100%;
-  display: flex;
+.appbar-toolbar {
   justify-content: space-between;
+}
+
+.left-controls {
+  display: flex;
   align-items: center;
-  padding: 0 24px;
-}
-
-.topbar-title {
-  position: absolute;
-  left: 20px;
-  font-weight: 500;
-}
-
-.topbar-context {
-  position: absolute;
-  right: 20px;
-  font-weight: 400;
-  opacity: 0.9;
-  text-align: right;
-}
-
-.topbar-advanced-features {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  gap: 16px;
 }

@@ -1,78 +1,153 @@
 import React, { useState, useEffect } from "react";
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  FormControlLabel,
-  Checkbox,
-} from "@mui/material";
-import { useLocation } from "react-router-dom";
+import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
+import PhotoUploadDialog from "../PhotoUploadDialog";
 import models from "../../modelData/models";
-
+import { useAuth } from "../../context/AuthContext";
+import { FormControlLabel, Checkbox } from "@mui/material";
 import "./styles.css";
 
 function TopBar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { currentUser, logout } = useAuth();
   const [contextText, setContextText] = useState("");
-  const [advancedFeatures, setAdvancedFeatures] = useState(() => {
-    const stored = localStorage.getItem("advancedFeatures");
-    return stored === "true";
+  const [advancedFeaturesEnabled, setAdvancedFeaturesEnabled] = useState(() => {
+    const saved = localStorage.getItem("advancedFeaturesEnabled");
+    return saved === "true";
   });
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
   useEffect(() => {
-    const pathParts = location.pathname.split("/");
-    const userId = pathParts[pathParts.length - 1];
+    async function fetchUser() {
+      if (!currentUser) {
+        setContextText("Please Login");
+        return;
+      }
 
-    if (pathParts.includes("photos")) {
-      const user = models.userModel(userId);
-      if (user) {
-        setContextText(`Photos of ${user.first_name} ${user.last_name}`);
+      const pathParts = location.pathname.split("/").filter(Boolean);
+
+      if (
+        (pathParts[0] === "users" || pathParts[0] === "photos") &&
+        pathParts.length === 2
+      ) {
+        const userId = pathParts[1];
+        try {
+          const user = await models.userModel(userId);
+          if (user) {
+            const fullName = `${user.first_name} ${user.last_name}`;
+            if (pathParts[0] === "photos") {
+              setContextText(
+                user._id === currentUser._id
+                  ? "My Photos"
+                  : `Photos of ${fullName}`
+              );
+            } else {
+              setContextText(
+                user._id === currentUser._id ? "My Profile" : fullName
+              );
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching user:", error);
+          setContextText("");
+        }
       } else {
-        setContextText("");
+        setContextText(
+          currentUser ? `Hi ${currentUser.first_name}` : "Please Login"
+        );
       }
-    } else if (pathParts.includes("users")) {
-      const user = models.userModel(userId);
-      if (user) {
-        setContextText(`${user.first_name} ${user.last_name}`);
-      } else {
-        setContextText("");
-      }
-    } else {
-      setContextText("User List");
     }
-  }, [location]);
+
+    fetchUser();
+  }, [location, currentUser]);
+
+  const handleLogout = () => {
+    logout();
+  };
+  
+  const handlePhotoUploadSuccess = (uploadedPhoto) => {
+    if (uploadedPhoto && uploadedPhoto._id) {
+      // Navigate thẳng tới ảnh vừa upload
+      navigate(
+        `/photos/${uploadedPhoto.userId || currentUser._id}/${
+          uploadedPhoto._id
+        }`,
+        { replace: true }
+      );
+
+      // Hoặc reload trang nếu cần thiết
+      window.location.reload();
+    } else if (currentUser && currentUser._id) {
+      navigate(`/photos/${currentUser._id}`);
+    }
+  };
 
   const handleAdvancedFeaturesChange = (event) => {
-    const newValue = event.target.checked;
-    setAdvancedFeatures(newValue);
-    localStorage.setItem("advancedFeatures", newValue);
-    // Trigger storage event to notify other components
-    window.dispatchEvent(new Event("storage"));
+    const checked = event.target.checked;
+    if (advancedFeaturesEnabled === checked) return; // Không làm gì nếu không thay đổi
+
+    setAdvancedFeaturesEnabled(checked);
+    localStorage.setItem("advancedFeaturesEnabled", checked);
+
+    const pathParts = location.pathname.split("/").filter(Boolean);
+
+    if (pathParts[0] === "photos" && pathParts[1]) {
+      const userId = pathParts[1];
+      navigate(`/photos/${userId}`, { replace: true });
+      
+      window.location.reload();
+    }
   };
 
   return (
-    <AppBar className="topbar-appBar" position="absolute">
-      <Toolbar className="topbar-toolbar">
-        <Typography variant="h5" className="topbar-title" color="inherit">
-          Nguyễn Minh Vũ - B22DCVT594
-        </Typography>
-        <Typography variant="h6" className="topbar-context" color="inherit">
+    <AppBar position="fixed">
+      <Toolbar className="appbar-toolbar">
+        {currentUser && (
+          <>
+            <Box className="left-controls">
+              <Typography
+                variant="body1"
+                onClick={() => navigate(`/users/${currentUser._id}`)}
+                sx={{ cursor: "pointer", textDecoration: "underline" }}
+              >
+                Hi {currentUser.first_name}
+              </Typography>
+              <Button color="inherit" onClick={() => setUploadDialogOpen(true)}>
+                Add Photo
+              </Button>
+              <Button color="inherit" onClick={handleLogout}>
+                Logout
+              </Button>
+            </Box>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={advancedFeaturesEnabled}
+                  onChange={handleAdvancedFeaturesChange}
+                  color="inherit"
+                />
+              }
+              label="Enable Advanced Features"
+              sx={{ color: "white", ml: 2 }}
+            />
+          </>
+        )}
+
+        <Typography variant="h6" component="div">
           {contextText}
         </Typography>
-        <div className="topbar-advanced-features">
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={advancedFeatures}
-                onChange={handleAdvancedFeaturesChange}
-                color="default"
-              />
-            }
-            label="Enable Advanced Features"
-            sx={{ color: "white" }}
-          />
-        </div>
       </Toolbar>
+
+      {currentUser && (
+        <PhotoUploadDialog
+          open={uploadDialogOpen}
+          onClose={() => setUploadDialogOpen(false)}
+          onSuccess={handlePhotoUploadSuccess}
+          userId={currentUser._id}
+          advancedFeatures={advancedFeaturesEnabled}
+        />
+      )}
     </AppBar>
   );
 }
