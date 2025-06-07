@@ -1,16 +1,24 @@
 .user-list {
-  height: 100%;
-  overflow-y: auto;
+    padding: 10px;
+}
+
+.user-list-item {
+    transition: background-color 0.2s ease-in-out;
 }
 
 .user-list-item:hover {
-  background-color: rgba(0, 0, 0, 0.04);
+    background-color: #f0f0f0;
 }
 
-.user-list .MuiListItemText-primary {
-  font-weight: 500;
+.user-list-badges {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
 }
 
-.user-list .MuiListItemText-secondary {
-  color: rgba(0, 0, 0, 0.6);
+.user-list-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
 }
