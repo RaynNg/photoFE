@@ -24,6 +24,9 @@ function UserPhotos() {
   const [commentTexts, setCommentTexts] = useState({});
   const { currentUser } = useAuth();
 
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editingCommentText, setEditingCommentText] = useState("");
+
   useEffect(() => {
     async function fetchData() {
       const [userData, photoData] = await Promise.all([
@@ -93,12 +96,52 @@ function UserPhotos() {
     }
   };
 
-  const handleDelete = async (photoId) => {
-    console.log("Delete", photoId);
+  const handleDeletePost = async (photoId) => {
+    if (!window.confirm("Delete this photo?")) return;
     try {
       await models.deletePhoto(photoId);
-      window.location.reload();
-    } catch (error){
+      setPhotos((prevPhotos) => prevPhotos.filter((p) => p._id !== photoId));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteComment = async (photoId, commentId) => {
+    if (!window.confirm("Delete this comment?")) return;
+    try {
+      await models.deleteCommentOfPhoto(photoId, commentId);
+      setPhotos((prevPhotos) =>
+        prevPhotos.map((p) =>
+          p._id === photoId
+            ? { ...p, comments: p.comments.filter((c) => c._id !== commentId) }
+            : p
+        )
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleEditComment = async (photoId, commentId, newComment) => {
+    if (!newComment.trim()) return alert("Comment cannot be empty");
+    try {
+      await models.editCommentOfPhoto(photoId, commentId, newComment);
+      setPhotos((prevPhotos) =>
+        prevPhotos.map((p) =>
+          p._id === photoId
+            ? {
+                ...p,
+                comments: p.comments.map((c) =>
+                  c._id === commentId ? { ...c, comment: newComment } : c
+                ),
+              }
+            : p
+        )
+      );
+      setEditingCommentId(null);
+      setEditingCommentText("");
+    } catch (error) {
+      alert("Edit comment failed!");
       console.error(error);
     }
   };
@@ -138,13 +181,16 @@ function UserPhotos() {
               Posted on {formatDate(photo.date_time)}
             </Typography>
             <div className="comment-section">
+              {currentUser && photo.user_id === currentUser._id && (
+                  <Button 
+                  variant="contained"
+                  color="error"
+                  onClick={() => handleDeletePost(photo._id)}>Delete</Button>
+                )}
               <div className="justify-between">
                 <Typography variant="h6" gutterBottom>
                   Comments
                 </Typography>
-                <Button variant="contained" color="primary" sx={{ mt: 1 }} onClick={handleDelete(photo._id)}>
-                  Delete
-                </Button>
               </div>
               {photo.comments &&
                 [...photo.comments]
@@ -166,9 +212,71 @@ function UserPhotos() {
                           {comment.user.first_name} {comment.user.last_name}
                         </Link>
                       </Typography>
-                      <Typography variant="body1" className="comment-text">
-                        {comment.comment}
-                      </Typography>
+                      {editingCommentId === comment._id ? (
+                        <>
+                          <TextField
+                            value={editingCommentText}
+                            onChange={e => setEditingCommentText(e.target.value)}
+                            size="small"
+                            fullWidth
+                            sx={{ mt: 1 }}
+                          />
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            sx={{ mt: 1, mr: 1 }}
+                            onClick={() =>
+                              handleEditComment(photo._id, comment._id, editingCommentText)
+                            }
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="secondary"
+                            size="small"
+                            sx={{ mt: 1 }}
+                            onClick={() => {
+                              setEditingCommentId(null);
+                              setEditingCommentText("");
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Typography variant="body1" className="comment-text">
+                            {comment.comment}
+                          </Typography>
+                          {currentUser && comment.user._id === currentUser._id && (
+                            <Button
+                              variant="outlined"
+                              color="primary"
+                              size="small"
+                              sx={{ mt: 1, mr: 1 }}
+                              onClick={() => {
+                                setEditingCommentId(comment._id);
+                                setEditingCommentText(comment.comment);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                          )}
+                          {currentUser && (photo.user_id === currentUser._id || comment.user._id === currentUser._id) && (
+                            <Button
+                              variant="contained"
+                              color="error"
+                              size="small"
+                              sx={{ mt: 1 }}
+                              onClick={() => handleDeleteComment(photo._id, comment._id)}
+                            >
+                              Delete Comment
+                            </Button>
+                          )}
+                        </>
+                      )}
                     </Card>
                   ))}
             </div>
